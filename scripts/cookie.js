@@ -63,6 +63,7 @@ function toISOFormat(date) {
 
   /* start handling UTMs */
   const required_fields = ["utm_source", "utm_medium", "utm_campaign"];
+  let is_need_change = true;
   let utm_data = {};
 
   // When the user comes to the site with URL params
@@ -72,9 +73,13 @@ function toISOFormat(date) {
     searchParams.has("utm_campaign")
   ) {
     // if url is missing one of required fields, do nothing
-    const has_all_params = required_fields.every((field) => field in searchParams)
+    for (let ctr = 0; ctr < required_fields.length; ctr++) {
+      if (!searchParams.has(required_fields[ctr])) {
+        is_need_change = false;
+      }
+    }
 
-    if (has_all_params) {
+    if (is_need_change) {
       eraseCookie("utm_data");
       const utm_source = searchParams.get("utm_source");
       const utm_medium = searchParams.get("utm_medium");
@@ -85,6 +90,15 @@ function toISOFormat(date) {
       const utm_content = searchParams.has("utm_content")
         ? searchParams.get("utm_content")
         : null;
+      const utm_ad_id = searchParams.has("utm_ad_id")
+        ? searchParams.get("utm_ad_id")
+        : null;
+      const utm_adgroup_id = searchParams.has("utm_adgroup_id")
+        ? searchParams.get("utm_adgroup_id")
+        : null;
+      const utm_campaign_id = searchParams.has("utm_campaign_id")
+        ? searchParams.get("utm_campaign_id")
+        : null;
 
       utm_data = {
         ...(utm_source && { utm_source }),
@@ -92,9 +106,10 @@ function toISOFormat(date) {
         ...(utm_campaign && { utm_campaign }),
         ...(utm_term && { utm_term }),
         ...(utm_content && { utm_content }),
+        ...(utm_ad_id && { utm_ad_id }),
+        ...(utm_adgroup_id && { utm_adgroup_id }),
+        ...(utm_campaign_id && { utm_campaign_id }),
       };
-
-      console.log(utm_data)
 
       const utm_data_cookie = encodeURI(JSON.stringify(utm_data))
         .replace(",", "%2C")
